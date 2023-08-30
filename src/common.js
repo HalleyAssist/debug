@@ -26,13 +26,6 @@ function setup(env) {
 	createDebug.skips = [];
 
 	/**
-	* Map of special "%n" handling functions, for the debug "format" argument.
-	*
-	* Valid key names are a single, lower or upper-case letter, i.e. "n" and "N".
-	*/
-	createDebug.formatters = {};
-
-	/**
 	* Selects a color for a debug namespace
 	* @param {String} namespace The namespace string for the debug instance to be colored
 	* @return {Number|String} An ANSI color code for the given namespace
@@ -63,7 +56,7 @@ function setup(env) {
 		let namespacesCache;
 		let enabledCache;
 
-		function debug(...args) {
+		function debug(l) {
 			// Disabled?
 			if (!debug.enabled) {
 				return;
@@ -79,38 +72,17 @@ function setup(env) {
 			self.curr = curr;
 			prevTime = curr;
 
-			args[0] = createDebug.coerce(args[0]);
+			l = createDebug.coerce(l);
 
-			if (typeof args[0] !== 'string') {
-				// Anything else let's inspect with %O
-				args.unshift('%O');
+			if (typeof l !== 'string') {
+				l = JSON.stringify(l);
 			}
 
-			// Apply any `formatters` transformations
-			let index = 0;
-			args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
-				// If we encounter an escaped % then don't increase the array index
-				if (match === '%%') {
-					return '%';
-				}
-				index++;
-				const formatter = createDebug.formatters[format];
-				if (typeof formatter === 'function') {
-					const val = args[index];
-					match = formatter.call(self, val);
-
-					// Now we need to remove `args[index]` since it's inlined in the `format`
-					args.splice(index, 1);
-					index--;
-				}
-				return match;
-			});
-
 			// Apply env-specific formatting (colors, etc.)
-			createDebug.formatArgs.call(self, args);
+			l = createDebug.formatArgs(self, l);
 
 			const logFn = self.log || createDebug.log;
-			logFn.apply(self, args);
+			logFn(l);
 		}
 
 		debug.namespace = namespace;

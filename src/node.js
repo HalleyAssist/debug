@@ -10,7 +10,7 @@ const util = require('util');
  */
 
 exports.init = init;
-exports.log = log;
+exports.log = console.error;
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
@@ -164,19 +164,20 @@ function useColors() {
  * @api public
  */
 
-function formatArgs(args) {
-	const {namespace: name, useColors} = this;
+function formatArgs(d, l) {
+	const {namespace: name, useColors} = d;
 
 	if (useColors) {
 		const c = this.color;
 		const colorCode = '\u001B[3' + (c < 8 ? c : '8;5;' + c);
 		const prefix = `  ${colorCode};1m${name} \u001B[0m`;
 
-		args[0] = prefix + args[0].split('\n').join('\n' + prefix);
-		args.push(colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
-	} else {
-		args[0] = getDate() + name + ' ' + args[0];
+		l = prefix + l.split('\n').join('\n' + prefix);
+		l += (colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
+		return l
 	}
+	
+	return getDate() + name + ' ' + l;
 }
 
 function getDate() {
@@ -184,14 +185,6 @@ function getDate() {
 		return '';
 	}
 	return new Date().toISOString() + ' ';
-}
-
-/**
- * Invokes `util.format()` with the specified arguments and writes to stderr.
- */
-
-function log(...args) {
-	return process.stderr.write(util.format(...args) + '\n');
 }
 
 /**
@@ -238,26 +231,3 @@ function init(debug) {
 }
 
 module.exports = require('./common')(exports);
-
-const {formatters} = module.exports;
-
-/**
- * Map %o to `util.inspect()`, all on a single line.
- */
-
-formatters.o = function (v) {
-	this.inspectOpts.colors = this.useColors;
-	return util.inspect(v, this.inspectOpts)
-		.split('\n')
-		.map(str => str.trim())
-		.join(' ');
-};
-
-/**
- * Map %O to `util.inspect()`, allowing multiple lines if needed.
- */
-
-formatters.O = function (v) {
-	this.inspectOpts.colors = this.useColors;
-	return util.inspect(v, this.inspectOpts);
-};
