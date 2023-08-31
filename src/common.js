@@ -64,14 +64,6 @@ function setup(env) {
 
 			const self = debug;
 
-			// Set `diff` timestamp
-			const curr = Number(new Date());
-			const ms = curr - (prevTime || curr);
-			self.diff = ms;
-			self.prev = prevTime;
-			self.curr = curr;
-			prevTime = curr;
-
 			l = createDebug.coerce(l);
 
 			if (typeof l !== 'string') {

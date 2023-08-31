@@ -173,18 +173,10 @@ function formatArgs(d, l) {
 		const prefix = `  ${colorCode};1m${name} \u001B[0m`;
 
 		l = prefix + l.split('\n').join('\n' + prefix);
-		l += (colorCode + 'm+' + module.exports.humanize(this.diff) + '\u001B[0m');
 		return l
 	}
 	
-	return getDate() + name + ' ' + l;
-}
-
-function getDate() {
-	if (exports.inspectOpts.hideDate) {
-		return '';
-	}
-	return new Date().toISOString() + ' ';
+	return `${name} ${l}`;
 }
 
 /**
