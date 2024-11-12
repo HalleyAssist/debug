@@ -51,7 +51,6 @@ function setup(env) {
 	* @api public
 	*/
 	function createDebug(namespace) {
-		let prevTime;
 		let enableOverride = null;
 		let namespacesCache;
 		let enabledCache;
@@ -135,17 +134,26 @@ function setup(env) {
 		const len = split.length;
 
 		for (i = 0; i < len; i++) {
-			if (!split[i]) {
+			let s = split[i]
+			if (!s) {
 				// ignore empty strings
 				continue;
 			}
 
-			namespaces = split[i].replace(/\*/g, '.*?');
+			if (typeof s === 'string') {
+				namespaces = s.replace(/\*/g, '.*?');
 
-			if (namespaces[0] === '-') {
-				createDebug.skips.push(new RegExp('^' + namespaces.slice(1) + '$'));
-			} else {
-				createDebug.names.push(new RegExp('^' + namespaces + '$'));
+				if (namespaces[0] === '-') {
+					createDebug.skips.push(new RegExp('^' + namespaces.slice(1) + '$'));
+				} else {
+					createDebug.names.push(new RegExp('^' + namespaces + '$'));
+				}
+			} else if (s instanceof RegExp) {
+				if (s.negative) {
+					createDebug.skips.push(s);
+				} else {
+					createDebug.names.push(s);
+				}
 			}
 		}
 	}
@@ -173,6 +181,10 @@ function setup(env) {
 	* @api public
 	*/
 	function enabled(name) {
+		if (createDebug.topName) {
+			if(!createDebug.topName.test(name)) return false
+		}
+
 		if (name[name.length - 1] === '*') {
 			return true;
 		}
