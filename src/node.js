@@ -10,7 +10,7 @@ const util = require('util');
  */
 
 exports.init = init;
-exports.log = typeof v8debug === 'object' ? console.error : process.stdout.write;
+exports.log = typeof v8debug === 'object' ? console.error : process.stdout.write.bind(process.stdout);
 exports.formatArgs = formatArgs;
 exports.save = save;
 exports.load = load;
