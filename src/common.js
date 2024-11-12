@@ -130,7 +130,13 @@ function setup(env) {
 		createDebug.skips = [];
 
 		let i;
-		const split = (typeof namespaces === 'string' ? namespaces : '').split(/[\s,]+/);
+		let split = namespaces
+		if (typeof split === 'string') {
+			split = split.split(/[\s,]+/);
+		} else if(!split) {
+			split = []
+		}
+		
 		const len = split.length;
 
 		for (i = 0; i < len; i++) {
