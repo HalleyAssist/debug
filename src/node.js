@@ -122,7 +122,7 @@ try {
  */
 
 exports.inspectOpts = Object.keys(process.env).filter(key => {
-	return /^debug_/i.test(key);
+	return /^debug_/i.test(key) && !/^debug_log_/i.test(key);
 }).reduce((obj, key) => {
 	// Camel-case
 	const prop = key
