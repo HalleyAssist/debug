@@ -1,11 +1,4 @@
 /**
- * Module dependencies.
- */
-
-const tty = require('tty');
-const util = require('util');
-
-/**
  * This is the Node.js implementation of `debug()`.
  */
 
@@ -13,7 +6,27 @@ exports.init = init;
 if(typeof v8debug === 'object') {
 	exports.log = console.error
 } else {
-	exports.log = a=>process.stdout.write(a+"\n");
+	let bufferStart = 0
+	const buffer = Buffer.allocUnsafe(4096);
+
+	function write(msg) {
+		let msgLen = Buffer.byteLength(msg);
+		if (msgLen + bufferStart <= buffer.length) {
+			buffer.write(msg, bufferStart, msgLen);
+			if(process.stdout.write(buffer.slice(bufferStart, msgLen))){
+				bufferStart = 0;
+			} else {
+				bufferStart += msgLen;
+			}
+		}
+	}
+
+	// when done writing, flush the buffer
+	process.stdout.on('drain', () => {
+		bufferStart = 0;
+	});
+
+	exports.log = write
 }
 exports.formatArgs = formatArgs;
 exports.save = save;
